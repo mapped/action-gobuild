@@ -31,7 +31,7 @@ runs:
       shell: bash
     - id: go-build
       run: |
-        ldflags="-extldflags -static"
+        ldflags="-s -w -extldflags -static"
         if [[ -n ${{ inputs.location }} ]]; then
           ldflags="-X ${{ inputs.location }}.commit=${{ github.sha }} $ldflags"
           ldflags="-X ${{ inputs.location }}.version=${{ inputs.version }} $ldflags"
