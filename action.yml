@@ -1,0 +1,42 @@
+name: 'Go Builder'
+description: 'Builds golang projects with lots of options'
+inputs:
+  target:
+    description: 'Path to build'
+    required: false
+    default: ''
+  version:
+    description: 'Version number'
+    required: false
+    default: '0.0.0'
+  location:
+    description: 'Version variable location path'
+    required: false
+    default: ''
+  date:
+    description: 'Date created'
+    required: false
+    default: ''
+    
+runs:
+  using: "composite"
+  steps: 
+    - id: get-dependencies
+      run: |
+          go get -v -t -d ./...
+          if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+          fi
+      shell: bash
+    - id: go-build
+      run: |
+        ldflags="-extldflags -static"
+        if [[ -n ${{ inputs.location }} ]]; then
+          ldflags="-X ${{ inputs.location }}.commit=${{ github.sha }} $ldflags"
+          ldflags="-X ${{ inputs.location }}.version=${{ inputs.version }} $ldflags"
+          ldflags="-X -X ${{ inputs.location }}.date=${{ inputs.date }} $ldflags"
+        fi
+
+        go build -a -ldflags "$ldflags" ${{ inputs.target }}
+      shell: bash
