@@ -21,14 +21,6 @@ inputs:
 runs:
   using: "composite"
   steps: 
-    - id: get-dependencies
-      run: |
-          #go get -v -t -d ${{ inputs.target }}
-          if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-          fi
-      shell: bash
     - id: go-build
       run: |
         ldflags="-s -w -extldflags -static"
