@@ -35,7 +35,7 @@ runs:
         if [[ -n ${{ inputs.location }} ]]; then
           ldflags="-X ${{ inputs.location }}.commit=${{ github.sha }} $ldflags"
           ldflags="-X ${{ inputs.location }}.version=${{ inputs.version }} $ldflags"
-          ldflags="-X -X ${{ inputs.location }}.date=${{ inputs.date }} $ldflags"
+          ldflags="-X ${{ inputs.location }}.date=${{ inputs.date }} $ldflags"
         fi
 
         go build -a -ldflags "$ldflags" ${{ inputs.target }}
