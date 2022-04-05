@@ -30,5 +30,5 @@ runs:
           ldflags="-X ${{ inputs.location }}.date=${{ inputs.date }} $ldflags"
         fi
 
-        go build -a -ldflags "$ldflags" ${{ inputs.target }}
+        go build -a -trimpath -ldflags "$ldflags" ${{ inputs.target }}
       shell: bash
