@@ -33,6 +33,14 @@ inputs:
     description: 'Parameter passed to the -extldflags options of ldflags'
     required: false
     default: '-static'
+  cross-os:
+    description: 'GOOS env variable for cross compilation - see `go tool dist list`'
+    required: false
+    default: ''
+  cross-arch:
+    description: 'GOARCH env variable for cross compilation - see `go tool dist list`'
+    required: false
+    default: ''
     
 runs:
   using: "composite"
@@ -54,6 +62,13 @@ runs:
           ldflags="-X ${{ inputs.location }}.commit=${{ github.sha }} $ldflags"
           ldflags="-X ${{ inputs.location }}.version=${{ inputs.version }} $ldflags"
           ldflags="-X ${{ inputs.location }}.date=${{ inputs.date }} $ldflags"
+        fi
+
+        if [[ -n "${{ inputs.cross-os }}" ]]; then
+          export GOOS="${{ inputs.cross-os }}"
+        fi
+        if [[ -n "${{ inputs.cross-arch }}" ]]; then
+          export GOARCH="${{ inputs.cross-arch }}"
         fi
 
         echo "-----------------------------------------"
