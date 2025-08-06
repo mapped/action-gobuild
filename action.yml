@@ -88,16 +88,16 @@ runs:
           export GOARCH="${{ inputs.cross-arch }}"
         fi
 
-        tags_arg=""
+        tags_arg=()
         if [[ -n "${{ inputs.tags }}" ]]; then
-          tags_arg="-tags '${{ inputs.tags }}'"
+          tags_arg=(-tags "${{ inputs.tags }}")
         fi
 
         echo "-----------------------------------------"
         echo "Executing:"
         echo "-----------------------------------------"
-        echo go build -a -trimpath $tags_arg -ldflags \"$ldflags\" ${{ inputs.target }}
+        echo go build -a -trimpath "${tags_arg[@]}" -ldflags \"$ldflags\" ${{ inputs.target }}
         echo "-----------------------------------------"
 
-        go build -a -trimpath $tags_arg -ldflags "$ldflags" ${{ inputs.target }}
+        go build -a -trimpath "${tags_arg[@]}" -ldflags "$ldflags" ${{ inputs.target }}
       shell: bash
