@@ -63,9 +63,14 @@ runs:
           export LD_LIBRARY_PATH="${{ inputs.ld-library-path }}"
         fi
 
-        export CGO_ENABLED="${{ inputs.cgoenabled }}"
+        # Go reads CGO_ENABLED as 1 or 0: "false" counts as enabled.
+        if [[ "${{ inputs.cgoenabled }}" == "true" ]]; then
+          export CGO_ENABLED=1
+        else
+          export CGO_ENABLED=0
+        fi
 
-        if [[ "$CGO_ENABLED" == "true" ]]; then
+        if [[ "$CGO_ENABLED" == "1" ]]; then
           if [[ -n "${{ inputs.cgo-ldflags }}" ]]; then
             export CGO_LDFLAGS="${{ inputs.cgo-ldflags }}"
           fi
