@@ -49,6 +49,10 @@ inputs:
     description: 'Build tags to pass to the go build command (space-separated)'
     required: false
     default: ''
+  force-rebuild:
+    description: 'Rebuild every package with go build -a instead of using the Go build cache (true or false). The cache is keyed on sources, flags, tags, environment and Go version, so the result is the same either way; -a only makes the build slower.'
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
@@ -88,6 +92,11 @@ runs:
           export GOARCH="${{ inputs.cross-arch }}"
         fi
 
+        force_arg=()
+        if [[ "${{ inputs.force-rebuild }}" == "true" ]]; then
+          force_arg=(-a)
+        fi
+
         tags_arg=()
         if [[ -n "${{ inputs.tags }}" ]]; then
           tags_arg=(-tags "${{ inputs.tags }}")
@@ -96,8 +105,8 @@ runs:
         echo "-----------------------------------------"
         echo "Executing:"
         echo "-----------------------------------------"
-        echo go build -a -trimpath "${tags_arg[@]}" -ldflags \"$ldflags\" ${{ inputs.target }}
+        echo go build "${force_arg[@]}" -trimpath "${tags_arg[@]}" -ldflags \"$ldflags\" ${{ inputs.target }}
         echo "-----------------------------------------"
 
-        go build -a -trimpath "${tags_arg[@]}" -ldflags "$ldflags" ${{ inputs.target }}
+        go build "${force_arg[@]}" -trimpath "${tags_arg[@]}" -ldflags "$ldflags" ${{ inputs.target }}
       shell: bash
