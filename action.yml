@@ -42,9 +42,9 @@ inputs:
     required: false
     default: ''
   cgoenabled:
-    description: 'Enable cgo (true or false)'
+    description: 'cgo: auto (Go decides: on for a native build when a C compiler is found, off when cross-compiling), true (always on; a cross build then needs a C cross compiler) or false (always off)'
     required: false
-    default: 'true'
+    default: 'auto'
   tags:
     description: 'Build tags to pass to the go build command (space-separated)'
     required: false
@@ -63,14 +63,20 @@ runs:
           export LD_LIBRARY_PATH="${{ inputs.ld-library-path }}"
         fi
 
-        # Go reads CGO_ENABLED as 1 or 0: "false" counts as enabled.
-        if [[ "${{ inputs.cgoenabled }}" == "true" ]]; then
-          export CGO_ENABLED=1
-        else
-          export CGO_ENABLED=0
-        fi
+        # Go honours CGO_ENABLED only as 1 or 0; unset, it decides itself and turns cgo
+        # off when cross-compiling. Up to v2.3.0 this exported "true" or "false", which Go
+        # ignored, so every build got that automatic choice: auto keeps it.
+        case "${{ inputs.cgoenabled }}" in
+          true) export CGO_ENABLED=1 ;;
+          false) export CGO_ENABLED=0 ;;
+          auto) unset CGO_ENABLED ;;
+          *)
+            echo "::error::cgoenabled must be auto, true or false, not '${{ inputs.cgoenabled }}'"
+            exit 1
+            ;;
+        esac
 
-        if [[ "$CGO_ENABLED" == "1" ]]; then
+        if [[ "${CGO_ENABLED-}" != "0" ]]; then
           if [[ -n "${{ inputs.cgo-ldflags }}" ]]; then
             export CGO_LDFLAGS="${{ inputs.cgo-ldflags }}"
           fi
@@ -79,7 +85,7 @@ runs:
           fi
         else
           if [[ -n "${{ inputs.cgo-ldflags }}" || -n "${{ inputs.cgo-cppflags }}" ]]; then
-            echo "Warning: CGO_ENABLED is false, but CGO_LDFLAGS or CGO_CPPFLAGS were provided. These will be ignored."
+            echo "Warning: cgoenabled is false, but cgo-ldflags or cgo-cppflags were provided. These will be ignored."
           fi
         fi
 
